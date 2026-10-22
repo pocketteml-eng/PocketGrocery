@@ -1,0 +1,1478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#006A60" />
+  <title>Grocery List</title>
+  <style>
+    :root {
+      --primary: #006A60;
+      --primary-light: #CCE8E3;
+      --primary-text: #00201C;
+      --bg: #F4FBF8;
+      --surface: #FFFFFF;
+      --border: #BEC9C6;
+      --text: #161D1C;
+      --subtext: #3F4947;
+      --danger-bg: #FFDAD6;
+      --danger-text: #93000A;
+      --added-bg: #D8F5E5;
+      --added-text: #005230;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding-bottom: 140px;
+    }
+
+    /* Top Header */
+    header {
+      background: var(--primary);
+      color: white;
+      padding: 14px 16px;
+      font-size: 1.15rem;
+      font-weight: 700;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .back-btn {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: white;
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 6px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .container { padding: 12px 16px; }
+
+    /* Global Grouping Scheme Toggle Bar */
+    .scheme-bar-wrap {
+      padding: 10px 16px 0 16px;
+    }
+    .scheme-toggle-bar {
+      display: flex;
+      background: #E0EBE8;
+      border-radius: 12px;
+      padding: 3px;
+      gap: 3px;
+    }
+    .scheme-btn {
+      flex: 1;
+      background: transparent;
+      border: none;
+      padding: 9px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      color: var(--subtext);
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .scheme-btn.active {
+      background: var(--surface);
+      color: var(--primary-text);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    /* Add / Search Form Card */
+    .add-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 10px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+    .search-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .search-row input {
+      flex: 1;
+      min-width: 0;
+      padding: 11px 12px;
+      font-size: 1rem;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg);
+      color: var(--text);
+      outline: none;
+    }
+    .search-row input:focus { border-color: var(--primary); background: var(--surface); }
+    .picker-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+      align-items: flex-end;
+    }
+    .picker-col {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .picker-col label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--subtext);
+      text-transform: uppercase;
+      padding-left: 2px;
+    }
+    .select-with-add {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+    .picker-select {
+      flex: 1;
+      min-width: 0;
+      padding: 8px 6px;
+      font-size: 0.85rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+      outline: none;
+    }
+    .mini-add-btn {
+      width: 32px;
+      height: 34px;
+      border-radius: 8px;
+      border: 1px solid var(--primary);
+      background: var(--primary-light);
+      color: var(--primary-text);
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .add-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      border: none;
+      background: var(--primary);
+      color: white;
+      font-size: 1.5rem;
+      font-weight: bold;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .add-btn:active { opacity: 0.7; }
+
+    /* Manage Bar on Browse Screen */
+    .manage-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .manage-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--subtext);
+      text-transform: uppercase;
+    }
+    .manage-btn {
+      border: 1px solid var(--primary);
+      background: var(--surface);
+      color: var(--primary);
+      border-radius: 10px;
+      padding: 6px 12px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* Shopping List Styles */
+    .aisle-header {
+      background: var(--primary-light);
+      color: var(--primary-text);
+      padding: 7px 12px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-top: 12px;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .aisle-header:first-child { margin-top: 0; }
+    .item-row {
+      display: flex;
+      align-items: center;
+      background: var(--surface);
+      padding: 9px 10px;
+      border-radius: 10px;
+      margin-bottom: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      gap: 8px;
+    }
+    .item-row input[type="checkbox"] {
+      width: 22px;
+      height: 22px;
+      accent-color: var(--primary);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .item-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .item-name {
+      font-size: 0.98rem;
+      font-weight: 500;
+      display: block;
+    }
+    .item-name.checked {
+      text-decoration: line-through;
+      color: #889390;
+    }
+    .item-submeta {
+      font-size: 0.75rem;
+      color: var(--subtext);
+      margin-top: 2px;
+      display: block;
+    }
+    .edit-btn {
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--subtext);
+      border-radius: 8px;
+      width: 30px;
+      height: 30px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .stepper {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .step-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .remove-btn {
+      border: none;
+      background: var(--danger-bg);
+      color: var(--danger-text);
+      border-radius: 8px;
+      padding: 6px 8px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    /* Directory Grid */
+    .dept-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .dept-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 12px;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .dept-card:active {
+      background: var(--primary-light);
+      border-color: var(--primary);
+    }
+    .dept-card-title {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: var(--text);
+      word-break: break-word;
+    }
+    .dept-card-sub {
+      font-size: 0.78rem;
+      color: var(--subtext);
+      font-weight: 500;
+    }
+
+    /* Catalog Item Rows */
+    .catalog-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface);
+      padding: 9px 10px;
+      border-radius: 10px;
+      margin-bottom: 6px;
+      border: 1px solid var(--border);
+      gap: 8px;
+    }
+    .catalog-action-btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: none;
+      border: none;
+      padding: 2px 0;
+      text-align: left;
+      font-size: 0.95rem;
+      color: var(--text);
+      cursor: pointer;
+      font-weight: 500;
+      gap: 8px;
+    }
+    .status-pill {
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 5px 10px;
+      border-radius: 16px;
+      background: var(--primary);
+      color: white;
+      flex-shrink: 0;
+    }
+    .status-pill.in-list {
+      background: var(--added-bg);
+      color: var(--added-text);
+    }
+    .del-catalog-btn {
+      border: none;
+      background: #E8EFED;
+      color: var(--subtext);
+      border-radius: 8px;
+      width: 30px;
+      height: 30px;
+      font-size: 1rem;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    /* Modal Dialogs */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 50;
+    }
+    .modal-card {
+      background: var(--surface);
+      width: 100%;
+      max-width: 380px;
+      max-height: 85vh;
+      overflow-y: auto;
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+    .modal-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-field {
+      margin-bottom: 12px;
+    }
+    .modal-field label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--subtext);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+    .modal-field input, .modal-field select {
+      width: 100%;
+      padding: 10px;
+      font-size: 0.95rem;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg);
+    }
+    .modal-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      margin-top: 14px;
+    }
+    .btn-secondary {
+      padding: 9px 14px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-primary {
+      padding: 9px 16px;
+      border: none;
+      background: var(--primary);
+      color: white;
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* Manage List Rows Inside Modal */
+    .manage-list-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 6px;
+      background: var(--bg);
+      gap: 8px;
+    }
+    .manage-list-name {
+      flex: 1;
+      font-size: 0.92rem;
+      font-weight: 600;
+    }
+    .manage-action-btn {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .manage-del-btn {
+      border: none;
+      background: var(--danger-bg);
+      color: var(--danger-text);
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      color: var(--subtext);
+      padding: 42px 16px;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+    .primary-cta {
+      margin-top: 14px;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 12px;
+      background: var(--primary);
+      color: white;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* Archive Bar & Bottom Navigation */
+    .archive-bar {
+      position: fixed;
+      bottom: 64px;
+      left: 0;
+      right: 0;
+      padding: 8px 16px;
+      background: linear-gradient(transparent, var(--bg) 35%);
+      z-index: 15;
+    }
+    .archive-btn {
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: 12px;
+      background: var(--primary);
+      color: white;
+      font-size: 0.95rem;
+      font-weight: 700;
+      box-shadow: 0 4px 12px rgba(0,106,96,0.3);
+      cursor: pointer;
+    }
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: flex;
+      z-index: 25;
+    }
+    .nav-tab {
+      flex: 1;
+      border: none;
+      background: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--subtext);
+      cursor: pointer;
+    }
+    .nav-tab.active {
+      color: var(--primary);
+      background: #F0FAF8;
+      font-weight: 700;
+    }
+    .nav-badge {
+      background: var(--primary-light);
+      color: var(--primary-text);
+      padding: 1px 7px;
+      border-radius: 10px;
+      font-size: 0.75rem;
+      margin-left: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top App Bar -->
+  <header>
+    <div class="header-left">
+      <button type="button" class="back-btn" id="backBtn" style="display: none;">← Back</button>
+      <span id="headerTitle">Shopping List</span>
+    </div>
+    <span id="headerRight" style="font-size: 0.9rem; font-weight: 500;">0 remaining</span>
+  </header>
+
+  <!-- Global Scheme Toggle -->
+  <div class="scheme-bar-wrap" id="globalSchemeBar">
+    <div class="scheme-toggle-bar">
+      <button type="button" class="scheme-btn active" id="btnSchemeDept">📂 Sort by Department</button>
+      <button type="button" class="scheme-btn" id="btnSchemeAisle">🔢 Sort by Aisle</button>
+    </div>
+  </div>
+
+  <!-- SCREEN 1: Active Shopping List -->
+  <div class="container" id="screenList">
+    <div id="activeListContainer"></div>
+  </div>
+
+  <!-- SCREEN 2: Browse Directory (Departments OR Aisles) -->
+  <div class="container" id="screenDepts" style="display: none;">
+    <form class="add-card" id="globalAddForm" onsubmit="return false;">
+      <div class="search-row">
+        <input
+          type="text"
+          id="globalSearchInput"
+          placeholder="Search or type new item..."
+          autocomplete="off"
+          enterkeyhint="done"
+        />
+        <button type="button" class="add-btn" id="globalAddBtn">+</button>
+      </div>
+      <div class="picker-row">
+        <div class="picker-col">
+          <label>Department</label>
+          <div class="select-with-add">
+            <select id="globalDeptSelect" class="picker-select"></select>
+            <button type="button" class="mini-add-btn" id="quickAddDeptBtn" title="Create New Department">+</button>
+          </div>
+        </div>
+        <div class="picker-col">
+          <label>Aisle</label>
+          <div class="select-with-add">
+            <select id="globalAisleSelect" class="picker-select"></select>
+            <button type="button" class="mini-add-btn" id="quickAddAisleBtn" title="Create New Aisle">+</button>
+          </div>
+        </div>
+      </div>
+    </form>
+
+    <div id="searchResultsBox" style="display: none; margin-bottom: 16px;"></div>
+
+    <!-- Header Row with Manage Custom Names Button -->
+    <div class="manage-bar">
+      <span class="manage-label" id="folderGridLabel">Departments (A–Z)</span>
+      <button type="button" class="manage-btn" id="openManageModalBtn">⚙️ Manage Departments</button>
+    </div>
+
+    <div id="deptGrid" class="dept-grid"></div>
+  </div>
+
+  <!-- SCREEN 3: Single Folder Screen -->
+  <div class="container" id="screenSingleGroup" style="display: none;">
+    <form class="add-card" id="groupAddForm" onsubmit="return false;">
+      <div class="search-row">
+        <input
+          type="text"
+          id="groupItemInput"
+          placeholder="Add new item here..."
+          autocomplete="off"
+          enterkeyhint="done"
+        />
+        <button type="button" class="add-btn" id="groupAddBtn">+</button>
+      </div>
+      <div class="picker-row">
+        <div class="picker-col">
+          <label id="secondaryPickerLabel">Assign Aisle</label>
+          <div class="select-with-add">
+            <select id="groupSecondarySelect" class="picker-select"></select>
+            <button type="button" class="mini-add-btn" id="quickAddSecondaryBtn">+</button>
+          </div>
+        </div>
+      </div>
+    </form>
+
+    <div id="singleGroupItemsContainer"></div>
+  </div>
+
+  <!-- MODAL 1: Edit Single Item Location -->
+  <div class="modal-backdrop" id="editModal">
+    <div class="modal-card">
+      <div class="modal-title">Edit Item Location</div>
+      <div class="modal-field">
+        <label>Item Name</label>
+        <input type="text" id="editNameInput" />
+      </div>
+      <div class="modal-field">
+        <label>Department</label>
+        <div class="select-with-add">
+          <select id="editDeptSelect" style="flex:1;"></select>
+          <button type="button" class="mini-add-btn" id="editQuickAddDeptBtn">+</button>
+        </div>
+      </div>
+      <div class="modal-field">
+        <label>Aisle</label>
+        <div class="select-with-add">
+          <select id="editAisleSelect" style="flex:1;"></select>
+          <button type="button" class="mini-add-btn" id="editQuickAddAisleBtn">+</button>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" id="editCancelBtn">Cancel</button>
+        <button type="button" class="btn-primary" id="editSaveBtn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: Manage Custom Departments or Aisles (Add, Rename, Delete) -->
+  <div class="modal-backdrop" id="manageModal">
+    <div class="modal-card">
+      <div class="modal-title">
+        <span id="manageModalTitle">Manage Departments</span>
+        <button type="button" class="btn-secondary" id="manageCloseTopBtn" style="padding: 4px 10px;">Done</button>
+      </div>
+      <form class="search-row" id="manageAddForm" onsubmit="return false;" style="margin-bottom: 14px;">
+        <input type="text" id="manageNewNameInput" placeholder="New name..." autocomplete="off" />
+        <button type="button" class="add-btn" id="manageAddBtn">+</button>
+      </form>
+      <div id="manageListContainer"></div>
+    </div>
+  </div>
+
+  <!-- Floating Archive Button -->
+  <div class="archive-bar" id="archiveBar" style="display: none;">
+    <button type="button" class="archive-btn" id="archiveBtn">Archive Checked Items (Keep in History)</button>
+  </div>
+
+  <!-- Bottom Navigation Bar -->
+  <nav class="bottom-nav">
+    <button type="button" class="nav-tab active" id="tabList">
+      <span>🛒 Shopping List <span class="nav-badge" id="navCountBadge">0</span></span>
+    </button>
+    <button type="button" class="nav-tab" id="tabDepts">
+      <span>🗂️ Browse & Add</span>
+    </button>
+  </nav>
+
+  <script>
+    const DEFAULT_CATEGORIES = [
+      "Bakery",
+      "Dairy & Eggs",
+      "Frozen",
+      "General",
+      "Household",
+      "Meat & Seafood",
+      "Pantry",
+      "Produce"
+    ];
+
+    const DEFAULT_AISLES = [
+      "Perimeter / Front",
+      "Aisle 1", "Aisle 2", "Aisle 3", "Aisle 4", "Aisle 5",
+      "Aisle 6", "Aisle 7", "Aisle 8", "Aisle 9", "Aisle 10",
+      "Back Wall",
+      "Unassigned"
+    ];
+
+    const STARTER_ITEMS = [
+      { name: "Apples", category: "Produce", aisle: "Perimeter / Front" },
+      { name: "Avocados", category: "Produce", aisle: "Perimeter / Front" },
+      { name: "Bananas", category: "Produce", aisle: "Perimeter / Front" },
+      { name: "Garlic", category: "Produce", aisle: "Perimeter / Front" },
+      { name: "Onions", category: "Produce", aisle: "Perimeter / Front" },
+      { name: "Potatoes", category: "Produce", aisle: "Perimeter / Front" },
+      { name: "Spinach", category: "Produce", aisle: "Perimeter / Front" },
+      { name: "Tomatoes", category: "Produce", aisle: "Perimeter / Front" },
+      { name: "Bagels", category: "Bakery", aisle: "Aisle 1" },
+      { name: "Sandwich Bread", category: "Bakery", aisle: "Aisle 1" },
+      { name: "Tortillas", category: "Bakery", aisle: "Aisle 2" },
+      { name: "Peanut Butter", category: "Pantry", aisle: "Aisle 2" },
+      { name: "Cereal", category: "Pantry", aisle: "Aisle 3" },
+      { name: "Coffee", category: "Pantry", aisle: "Aisle 3" },
+      { name: "Olive Oil", category: "Pantry", aisle: "Aisle 4" },
+      { name: "Pasta", category: "Pantry", aisle: "Aisle 4" },
+      { name: "Pasta Sauce", category: "Pantry", aisle: "Aisle 4" },
+      { name: "Rice", category: "Pantry", aisle: "Aisle 4" },
+      { name: "Dish Soap", category: "Household", aisle: "Aisle 8" },
+      { name: "Trash Bags", category: "Household", aisle: "Aisle 8" },
+      { name: "Paper Towels", category: "Household", aisle: "Aisle 9" },
+      { name: "Toilet Paper", category: "Household", aisle: "Aisle 9" },
+      { name: "Frozen Peas", category: "Frozen", aisle: "Aisle 10" },
+      { name: "Frozen Pizza", category: "Frozen", aisle: "Aisle 10" },
+      { name: "Ice Cream", category: "Frozen", aisle: "Aisle 10" },
+      { name: "Bacon", category: "Meat & Seafood", aisle: "Back Wall" },
+      { name: "Chicken Breast", category: "Meat & Seafood", aisle: "Back Wall" },
+      { name: "Ground Beef", category: "Meat & Seafood", aisle: "Back Wall" },
+      { name: "Salmon", category: "Meat & Seafood", aisle: "Back Wall" },
+      { name: "Butter", category: "Dairy & Eggs", aisle: "Back Wall" },
+      { name: "Cheddar Cheese", category: "Dairy & Eggs", aisle: "Back Wall" },
+      { name: "Eggs", category: "Dairy & Eggs", aisle: "Back Wall" },
+      { name: "Greek Yogurt", category: "Dairy & Eggs", aisle: "Back Wall" },
+      { name: "Milk", category: "Dairy & Eggs", aisle: "Back Wall" }
+    ].map(item => ({
+      ...item,
+      quantity: 1,
+      isInCurrentList: false,
+      isChecked: false
+    }));
+
+    const STORAGE_KEY = "grocery_app_state_v5";
+    let currentScreen = "list"; // 'list' | 'depts' | 'singleGroup'
+    let groupingScheme = "dept"; // 'dept' | 'aisle'
+    let activeGroupValue = "Produce";
+    let editingOriginalName = null;
+
+    // Smart numerical + alphabetical sorter so "Aisle 2" comes before "Aisle 10"
+    function compareGroupKeys(a, b) {
+      if (a === "Checked / In Cart") return 1;
+      if (b === "Checked / In Cart") return -1;
+      if (a === "Unassigned") return 1;
+      if (b === "Unassigned") return -1;
+      return a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" });
+    }
+
+    function loadAppState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY) || window.name;
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && Array.isArray(parsed.items)) {
+            return {
+              items: parsed.items,
+              categories: Array.isArray(parsed.categories) && parsed.categories.length
+                ? parsed.categories
+                : DEFAULT_CATEGORIES,
+              aisles: Array.isArray(parsed.aisles) && parsed.aisles.length
+                ? parsed.aisles
+                : DEFAULT_AISLES
+            };
+          }
+        }
+      } catch (e) {}
+      return {
+        items: STARTER_ITEMS,
+        categories: [...DEFAULT_CATEGORIES],
+        aisles: [...DEFAULT_AISLES]
+      };
+    }
+
+    const appState = loadAppState();
+    let items = appState.items;
+    let categories = appState.categories;
+    let aisles = appState.aisles;
+
+    function normalizeName(raw) {
+      const trimmed = (raw || "").trim();
+      if (!trimmed) return "";
+      return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+    }
+
+    function syncCategoriesAndAislesWithItems() {
+      items.forEach(item => {
+        if (item.category && !categories.includes(item.category)) {
+          categories.push(item.category);
+        }
+        if (item.aisle && !aisles.includes(item.aisle)) {
+          aisles.push(item.aisle);
+        }
+      });
+      categories.sort(compareGroupKeys);
+      aisles.sort(compareGroupKeys);
+    }
+
+    function save() {
+      syncCategoriesAndAislesWithItems();
+      const payload = JSON.stringify({ items, categories, aisles });
+      try { localStorage.setItem(STORAGE_KEY, payload); } catch (e) {}
+      try { window.name = payload; } catch (e) {}
+      refreshAllDropdowns();
+      render();
+    }
+
+    function populateSelect(selectEl, optionsList, preferredValue) {
+      if (!selectEl) return;
+      const prev = preferredValue || selectEl.value;
+      selectEl.innerHTML = "";
+      optionsList.forEach(val => {
+        const opt = document.createElement("option");
+        opt.value = val;
+        opt.textContent = val;
+        if (val === prev) opt.selected = true;
+        selectEl.appendChild(opt);
+      });
+    }
+
+    function refreshAllDropdowns(selectedDept, selectedAisle) {
+      syncCategoriesAndAislesWithItems();
+      populateSelect(document.getElementById("globalDeptSelect"), categories, selectedDept);
+      populateSelect(document.getElementById("globalAisleSelect"), aisles, selectedAisle);
+      populateSelect(document.getElementById("editDeptSelect"), categories, selectedDept);
+      populateSelect(document.getElementById("editAisleSelect"), aisles, selectedAisle);
+
+      const secSelect = document.getElementById("groupSecondarySelect");
+      if (groupingScheme === "dept") {
+        document.getElementById("secondaryPickerLabel").textContent = "Assign Aisle for New Item";
+        populateSelect(secSelect, aisles, selectedAisle);
+      } else {
+        document.getElementById("secondaryPickerLabel").textContent = "Assign Department for New Item";
+        populateSelect(secSelect, categories, selectedDept);
+      }
+    }
+
+    // Create a custom Department or Aisle via prompt and select it immediately
+    function promptCreateNewGroup(type, targetSelectId) {
+      const label = type === "dept" ? "Department" : "Aisle";
+      const example = type === "dept" ? "e.g., Deli, Pet Supplies, Pharmacy" : "e.g., Aisle 11, Aisle 4B, Deli Counter";
+      const raw = prompt(`Enter new ${label} name (${example}):`);
+      const clean = normalizeName(raw);
+      if (!clean) return;
+
+      if (type === "dept") {
+        if (!categories.some(c => c.toLowerCase() === clean.toLowerCase())) {
+          categories.push(clean);
+        }
+        refreshAllDropdowns(clean, null);
+        if (targetSelectId) document.getElementById(targetSelectId).value = clean;
+      } else {
+        if (!aisles.some(a => a.toLowerCase() === clean.toLowerCase())) {
+          aisles.push(clean);
+        }
+        refreshAllDropdowns(null, clean);
+        if (targetSelectId) document.getElementById(targetSelectId).value = clean;
+      }
+      save();
+    }
+
+    function addOrRestoreItem(rawName, deptName, aisleName) {
+      const cleanName = normalizeName(rawName);
+      if (!cleanName) return false;
+
+      const existing = items.find(i => i.name.toLowerCase() === cleanName.toLowerCase());
+      if (existing) {
+        existing.isInCurrentList = true;
+        existing.isChecked = false;
+        existing.quantity = 1;
+        if (deptName) existing.category = deptName;
+        if (aisleName) existing.aisle = aisleName;
+      } else {
+        items.push({
+          name: cleanName,
+          category: deptName || categories[0] || "General",
+          aisle: aisleName || aisles[0] || "Unassigned",
+          quantity: 1,
+          isInCurrentList: true,
+          isChecked: false
+        });
+      }
+      save();
+      return true;
+    }
+
+    // Single Item Edit Modal
+    function openEditModal(item) {
+      editingOriginalName = item.name;
+      refreshAllDropdowns(item.category, item.aisle);
+      document.getElementById("editNameInput").value = item.name;
+      document.getElementById("editDeptSelect").value = item.category;
+      document.getElementById("editAisleSelect").value = item.aisle;
+      document.getElementById("editModal").style.display = "flex";
+    }
+
+    function closeEditModal() {
+      editingOriginalName = null;
+      document.getElementById("editModal").style.display = "none";
+    }
+
+    function saveEditedItem() {
+      if (!editingOriginalName) return;
+      const item = items.find(i => i.name === editingOriginalName);
+      if (item) {
+        const newName = normalizeName(document.getElementById("editNameInput").value);
+        if (newName) item.name = newName;
+        item.category = document.getElementById("editDeptSelect").value;
+        item.aisle = document.getElementById("editAisleSelect").value;
+        save();
+      }
+      closeEditModal();
+    }
+
+    // Manage Custom Departments / Aisles Modal
+    function openManageModal() {
+      renderManageModalList();
+      document.getElementById("manageModal").style.display = "flex";
+    }
+
+    function closeManageModal() {
+      document.getElementById("manageModal").style.display = "none";
+    }
+
+    function renderManageModalList() {
+      const isDept = groupingScheme === "dept";
+      const list = isDept ? categories : aisles;
+      const typeLabel = isDept ? "Department" : "Aisle";
+
+      document.getElementById("manageModalTitle").textContent = isDept
+        ? "Manage Departments"
+        : "Manage Aisles";
+      document.getElementById("manageNewNameInput").placeholder = `Add new ${typeLabel}...`;
+
+      const container = document.getElementById("manageListContainer");
+      container.innerHTML = "";
+
+      list.forEach(name => {
+        const count = items.filter(i => (isDept ? i.category === name : i.aisle === name)).length;
+        const row = document.createElement("div");
+        row.className = "manage-list-row";
+
+        const titleSpan = document.createElement("span");
+        titleSpan.className = "manage-list-name";
+        titleSpan.innerHTML = `${name} <small style="color:var(--subtext); font-weight:normal;">(${count})</small>`;
+
+        const renameBtn = document.createElement("button");
+        renameBtn.type = "button";
+        renameBtn.className = "manage-action-btn";
+        renameBtn.textContent = "Rename";
+        renameBtn.onclick = () => {
+          const updated = normalizeName(prompt(`Rename "${name}" to:`, name));
+          if (!updated || updated === name) return;
+          if (isDept) {
+            categories = categories.map(c => (c === name ? updated : c));
+            items.forEach(i => { if (i.category === name) i.category = updated; });
+          } else {
+            aisles = aisles.map(a => (a === name ? updated : a));
+            items.forEach(i => { if (i.aisle === name) i.aisle = updated; });
+          }
+          save();
+          renderManageModalList();
+        };
+
+        const delBtn = document.createElement("button");
+        delBtn.type = "button";
+        delBtn.className = "manage-del-btn";
+        delBtn.textContent = "Delete";
+        delBtn.onclick = () => {
+          if (list.length <= 1) {
+            alert(`You must keep at least one ${typeLabel}.`);
+            return;
+          }
+          const fallback = isDept ? "General" : "Unassigned";
+          if (isDept) {
+            categories = categories.filter(c => c !== name);
+            if (count > 0 && !categories.includes(fallback)) categories.push(fallback);
+            items.forEach(i => { if (i.category === name) i.category = fallback; });
+          } else {
+            aisles = aisles.filter(a => a !== name);
+            if (count > 0 && !aisles.includes(fallback)) aisles.push(fallback);
+            items.forEach(i => { if (i.aisle === name) i.aisle = fallback; });
+          }
+          save();
+          renderManageModalList();
+        };
+
+        row.appendChild(titleSpan);
+        row.appendChild(renameBtn);
+        row.appendChild(delBtn);
+        container.appendChild(row);
+      });
+    }
+
+    function submitManageNewGroup() {
+      const input = document.getElementById("manageNewNameInput");
+      const clean = normalizeName(input.value);
+      if (!clean) return;
+      if (groupingScheme === "dept") {
+        if (!categories.some(c => c.toLowerCase() === clean.toLowerCase())) {
+          categories.push(clean);
+        }
+      } else {
+        if (!aisles.some(a => a.toLowerCase() === clean.toLowerCase())) {
+          aisles.push(clean);
+        }
+      }
+      input.value = "";
+      save();
+      renderManageModalList();
+    }
+
+    function toggleItemInActiveList(name) {
+      const item = items.find(i => i.name === name);
+      if (!item) return;
+      if (item.isInCurrentList) {
+        item.isInCurrentList = false;
+        item.isChecked = false;
+      } else {
+        item.isInCurrentList = true;
+        item.isChecked = false;
+        item.quantity = 1;
+      }
+      save();
+    }
+
+    function deleteItemPermanently(name) {
+      items = items.filter(i => i.name !== name);
+      save();
+    }
+
+    function changeQuantity(name, delta) {
+      const item = items.find(i => i.name === name);
+      if (!item) return;
+      const next = item.quantity + delta;
+      if (next >= 1) {
+        item.quantity = next;
+        save();
+      } else {
+        item.isInCurrentList = false;
+        item.isChecked = false;
+        save();
+      }
+    }
+
+    function toggleChecked(name) {
+      const item = items.find(i => i.name === name);
+      if (item) {
+        item.isChecked = !item.isChecked;
+        save();
+      }
+    }
+
+    function archiveChecked() {
+      items.forEach(i => {
+        if (i.isInCurrentList && i.isChecked) {
+          i.isInCurrentList = false;
+          i.isChecked = false;
+        }
+      });
+      save();
+    }
+
+    function switchScreen(screen, groupVal) {
+      currentScreen = screen;
+      if (groupVal) activeGroupValue = groupVal;
+      refreshAllDropdowns();
+      window.scrollTo(0, 0);
+      render();
+    }
+
+    function render() {
+      const activeItems = items
+        .filter(i => i.isInCurrentList)
+        .sort((a, b) => (a.isChecked - b.isChecked) || a.name.localeCompare(b.name));
+
+      const remainingCount = activeItems.filter(i => !i.isChecked).length;
+      document.getElementById("navCountBadge").textContent = remainingCount;
+
+      document.getElementById("tabList").className = "nav-tab" + (currentScreen === "list" ? " active" : "");
+      document.getElementById("tabDepts").className = "nav-tab" + (currentScreen !== "list" ? " active" : "");
+
+      document.getElementById("btnSchemeDept").className = "scheme-btn" + (groupingScheme === "dept" ? " active" : "");
+      document.getElementById("btnSchemeAisle").className = "scheme-btn" + (groupingScheme === "aisle" ? " active" : "");
+      document.getElementById("globalSchemeBar").style.display = currentScreen === "singleGroup" ? "none" : "block";
+
+      document.getElementById("screenList").style.display = currentScreen === "list" ? "block" : "none";
+      document.getElementById("screenDepts").style.display = currentScreen === "depts" ? "block" : "none";
+      document.getElementById("screenSingleGroup").style.display = currentScreen === "singleGroup" ? "block" : "none";
+
+      const backBtn = document.getElementById("backBtn");
+      const headerTitle = document.getElementById("headerTitle");
+      const headerRight = document.getElementById("headerRight");
+
+      if (currentScreen === "list") {
+        backBtn.style.display = "none";
+        headerTitle.textContent = "Shopping List";
+        headerRight.textContent = `${remainingCount} remaining`;
+      } else if (currentScreen === "depts") {
+        backBtn.style.display = "none";
+        headerTitle.textContent = groupingScheme === "dept" ? "Browse by Department" : "Browse by Aisle";
+        headerRight.textContent = `${items.length} saved`;
+      } else if (currentScreen === "singleGroup") {
+        backBtn.style.display = "inline-block";
+        headerTitle.textContent = activeGroupValue;
+        const groupTotal = items.filter(i =>
+          groupingScheme === "dept" ? i.category === activeGroupValue : i.aisle === activeGroupValue
+        ).length;
+        headerRight.textContent = `${groupTotal} items`;
+      }
+
+      // SCREEN 1: Active Shopping List
+      if (currentScreen === "list") {
+        const container = document.getElementById("activeListContainer");
+        container.innerHTML = "";
+
+        if (activeItems.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <div>Your shopping list is empty.</div>
+              <button type="button" class="primary-cta" id="emptyBrowseBtn">Browse Saved Items to Add</button>
+            </div>
+          `;
+          document.getElementById("emptyBrowseBtn").onclick = () => switchScreen("depts");
+        } else {
+          const groups = {};
+          activeItems.forEach(item => {
+            const rawKey = groupingScheme === "dept" ? item.category : item.aisle;
+            const key = item.isChecked ? "Checked / In Cart" : (rawKey || "Unassigned");
+            if (!groups[key]) groups[key] = [];
+            groups[key].push(item);
+          });
+
+          const sortedKeys = Object.keys(groups).sort(compareGroupKeys);
+
+          sortedKeys.forEach(groupTitle => {
+            const groupItems = groups[groupTitle];
+            const header = document.createElement("div");
+            header.className = "aisle-header";
+            header.innerHTML = `<span>${groupTitle}</span><span>${groupItems.length}</span>`;
+            container.appendChild(header);
+
+            groupItems.forEach(item => {
+              const row = document.createElement("div");
+              row.className = "item-row";
+
+              const cb = document.createElement("input");
+              cb.type = "checkbox";
+              cb.checked = item.isChecked;
+              cb.onchange = () => toggleChecked(item.name);
+
+              const infoDiv = document.createElement("div");
+              infoDiv.className = "item-info";
+
+              const nameSpan = document.createElement("span");
+              nameSpan.className = "item-name" + (item.isChecked ? " checked" : "");
+              nameSpan.textContent = item.name;
+
+              const metaSpan = document.createElement("span");
+              metaSpan.className = "item-submeta";
+              metaSpan.textContent = groupingScheme === "dept"
+                ? `📍 ${item.aisle}`
+                : `📂 ${item.category}`;
+
+              infoDiv.appendChild(nameSpan);
+              infoDiv.appendChild(metaSpan);
+
+              row.appendChild(cb);
+              row.appendChild(infoDiv);
+
+              const editBtn = document.createElement("button");
+              editBtn.type = "button";
+              editBtn.className = "edit-btn";
+              editBtn.textContent = "✎";
+              editBtn.title = "Edit Name, Department, or Aisle";
+              editBtn.onclick = () => openEditModal(item);
+              row.appendChild(editBtn);
+
+              if (!item.isChecked) {
+                const stepper = document.createElement("div");
+                stepper.className = "stepper";
+
+                const minusBtn = document.createElement("button");
+                minusBtn.type = "button";
+                minusBtn.className = "step-btn";
+                minusBtn.textContent = "-";
+                minusBtn.onclick = () => changeQuantity(item.name, -1);
+
+                const qtyText = document.createElement("strong");
+                qtyText.textContent = item.quantity;
+
+                const plusBtn = document.createElement("button");
+                plusBtn.type = "button";
+                plusBtn.className = "step-btn";
+                plusBtn.textContent = "+";
+                plusBtn.onclick = () => changeQuantity(item.name, 1);
+
+                stepper.appendChild(minusBtn);
+                stepper.appendChild(qtyText);
+                stepper.appendChild(plusBtn);
+                row.appendChild(stepper);
+              }
+
+              const removeBtn = document.createElement("button");
+              removeBtn.type = "button";
+              removeBtn.className = "remove-btn";
+              removeBtn.textContent = "×";
+              removeBtn.onclick = () => toggleItemInActiveList(item.name);
+              row.appendChild(removeBtn);
+
+              container.appendChild(row);
+            });
+          });
+        }
+
+        const hasChecked = activeItems.some(i => i.isChecked);
+        document.getElementById("archiveBar").style.display = hasChecked ? "block" : "none";
+      } else {
+        document.getElementById("archiveBar").style.display = "none";
+      }
+
+      // SCREEN 2: Directory Grid
+      if (currentScreen === "depts") {
+        document.getElementById("folderGridLabel").textContent = groupingScheme === "dept"
+          ? "Departments"
+          : "Aisles";
+        document.getElementById("openManageModalBtn").textContent = groupingScheme === "dept"
+          ? "⚙️ Manage Departments"
+          : "⚙️ Manage Aisles";
+
+        const query = (document.getElementById("globalSearchInput").value || "").trim().toLowerCase();
+        const searchBox = document.getElementById("searchResultsBox");
+        searchBox.innerHTML = "";
+
+        if (query.length > 0) {
+          searchBox.style.display = "block";
+          const matches = items
+            .filter(i => i.name.toLowerCase().includes(query))
+            .sort((a, b) => a.name.localeCompare(b.name));
+
+          matches.forEach(item => {
+            searchBox.appendChild(buildCatalogItemRow(item, true));
+          });
+        } else {
+          searchBox.style.display = "none";
+        }
+
+        const grid = document.getElementById("deptGrid");
+        grid.innerHTML = "";
+
+        const folderList = groupingScheme === "dept" ? categories : aisles;
+
+        folderList.forEach(folderName => {
+          const folderItems = items.filter(i =>
+            groupingScheme === "dept" ? i.category === folderName : i.aisle === folderName
+          );
+          const inListCount = folderItems.filter(i => i.isInCurrentList).length;
+
+          const card = document.createElement("button");
+          card.type = "button";
+          card.className = "dept-card";
+          card.innerHTML = `
+            <span class="dept-card-title">${folderName}</span>
+            <span class="dept-card-sub">
+              ${folderItems.length} saved ${inListCount > 0 ? `• <b>${inListCount} in list</b>` : ""}
+            </span>
+          `;
+          card.onclick = () => switchScreen("singleGroup", folderName);
+          grid.appendChild(card);
+        });
+      }
+
+      // SCREEN 3: Single Folder View
+      if (currentScreen === "singleGroup") {
+        const groupInput = document.getElementById("groupItemInput");
+        groupInput.placeholder = `Add new item to ${activeGroupValue}...`;
+
+        const container = document.getElementById("singleGroupItemsContainer");
+        container.innerHTML = "";
+
+        const groupItems = items
+          .filter(i => groupingScheme === "dept" ? i.category === activeGroupValue : i.aisle === activeGroupValue)
+          .sort((a, b) => a.name.localeCompare(b.name));
+
+        if (groupItems.length === 0) {
+          container.innerHTML = `<div class="empty-state">No saved items in <b>${activeGroupValue}</b> yet.<br/>Type an item above or tap ✎ on any item to move it here!</div>`;
+        } else {
+          groupItems.forEach(item => {
+            container.appendChild(buildCatalogItemRow(item, false));
+          });
+        }
+      }
+    }
+
+    function buildCatalogItemRow(item, showBothBadges) {
+      const row = document.createElement("div");
+      row.className = "catalog-row";
+
+      const mainBtn = document.createElement("button");
+      mainBtn.type = "button";
+      mainBtn.className = "catalog-action-btn";
+
+      const subInfo = showBothBadges
+        ? `${item.category} • ${item.aisle}`
+        : (groupingScheme === "dept" ? `📍 ${item.aisle}` : `📂 ${item.category}`);
+
+      const labelHtml = `
+        <div>
+          <div>${item.name}</div>
+          <small style="color:var(--subtext); font-weight:normal;">${subInfo}</small>
+        </div>
+      `;
+
+      const statusHtml = item.isInCurrentList
+        ? `<span class="status-pill in-list">✓ In List</span>`
+        : `<span class="status-pill">+ Add</span>`;
+
+      mainBtn.innerHTML = labelHtml + statusHtml;
+      mainBtn.onclick = () => toggleItemInActiveList(item.name);
+
+      const editBtn = document.createElement("button");
+      editBtn.type = "button";
+      editBtn.className = "edit-btn";
+      editBtn.textContent = "✎";
+      editBtn.title = "Edit Item";
+      editBtn.onclick = (e) => {
+        e.stopPropagation();
+        openEditModal(item);
+      };
+
+      const delBtn = document.createElement("button");
+      delBtn.type = "button";
+      delBtn.className = "del-catalog-btn";
+      delBtn.textContent = "×";
+      delBtn.title = "Delete permanently";
+      delBtn.onclick = (e) => {
+        e.stopPropagation();
+        deleteItemPermanently(item.name);
+      };
+
+      row.appendChild(mainBtn);
+      row.appendChild(editBtn);
+      row.appendChild(delBtn);
+      return row;
+    }
+
+    // Navigation & Scheme Listeners
+    document.getElementById("tabList").addEventListener("click", () => switchScreen("list"));
+    document.getElementById("tabDepts").addEventListener("click", () => switchScreen("depts"));
+    document.getElementById("backBtn").addEventListener("click", () => switchScreen("depts"));
+    document.getElementById("archiveBtn").addEventListener("click", archiveChecked);
+
+    document.getElementById("btnSchemeDept").addEventListener("click", () => {
+      groupingScheme = "dept";
+      refreshAllDropdowns();
+      render();
+    });
+    document.getElementById("btnSchemeAisle").addEventListener("click", () => {
+      groupingScheme = "aisle";
+      refreshAllDropdowns();
+      render();
+    });
+
+    // Quick "+" Buttons Next to Dropdowns to Create Custom Departments / Aisles
+    document.getElementById("quickAddDeptBtn").addEventListener("click", () => promptCreateNewGroup("dept", "globalDeptSelect"));
+    document.getElementById("quickAddAisleBtn").addEventListener("click", () => promptCreateNewGroup("aisle", "globalAisleSelect"));
+    document.getElementById("editQuickAddDeptBtn").addEventListener("click", () => promptCreateNewGroup("dept", "editDeptSelect"));
+    document.getElementById("editQuickAddAisleBtn").addEventListener("click", () => promptCreateNewGroup("aisle", "editAisleSelect"));
+    document.getElementById("quickAddSecondaryBtn").addEventListener("click", () => {
+      const targetType = groupingScheme === "dept" ? "aisle" : "dept";
+      promptCreateNewGroup(targetType, "groupSecondarySelect");
+    });
+
+    // Manage Custom Groups Modal Listeners
+    document.getElementById("openManageModalBtn").addEventListener("click", openManageModal);
+    document.getElementById("manageCloseTopBtn").addEventListener("click", closeManageModal);
+    document.getElementById("manageAddBtn").addEventListener("click", submitManageNewGroup);
+    document.getElementById("manageAddForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      submitManageNewGroup();
+    });
+
+    // Edit Item Modal Listeners
+    document.getElementById("editCancelBtn").addEventListener("click", closeEditModal);
+    document.getElementById("editSaveBtn").addEventListener("click", saveEditedItem);
+
+    // Global Add on Screen 2
+    const globalInput = document.getElementById("globalSearchInput");
+    globalInput.addEventListener("input", render);
+    function submitGlobalAdd() {
+      const dept = document.getElementById("globalDeptSelect").value;
+      const aisle = document.getElementById("globalAisleSelect").value;
+      if (addOrRestoreItem(globalInput.value, dept, aisle)) {
+        globalInput.value = "";
+        render();
+      }
+    }
+    document.getElementById("globalAddBtn").addEventListener("click", submitGlobalAdd);
+    document.getElementById("globalAddForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      submitGlobalAdd();
+    });
+
+    // Folder-Specific Add on Screen 3
+    const groupInput = document.getElementById("groupItemInput");
+    function submitGroupAdd() {
+      const secVal = document.getElementById("groupSecondarySelect").value;
+      const dept = groupingScheme === "dept" ? activeGroupValue : secVal;
+      const aisle = groupingScheme === "aisle" ? activeGroupValue : secVal;
+      if (addOrRestoreItem(groupInput.value, dept, aisle)) {
+        groupInput.value = "";
+        render();
+      }
+    }
+    document.getElementById("groupAddBtn").addEventListener("click", submitGroupAdd);
+    document.getElementById("groupAddForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      submitGroupAdd();
+    });
+
+    refreshAllDropdowns("Produce", "Aisle 1");
+    render();
+  </script>
+</body>
+</html>
